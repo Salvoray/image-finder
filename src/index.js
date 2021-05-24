@@ -1,7 +1,7 @@
-// import './io';
 import './sass/main.scss';
 import 'material-design-icons/iconfont/material-icons.css';
-import ImagesApiService from './api-services/apiService';
+// import ImagesApiService from './api-services/apiService';
+import ImagesApiService from './api-services/asyncApiService';
 import searchFrom from './templates/searchFrom.hbs';
 import imagesListTpl from './templates/imagesList.hbs';
 
@@ -12,7 +12,7 @@ const listContainerRef = document.querySelector('.gallery');
 
 const imagesApiService = new ImagesApiService();
 
-const makeImagesMarkup = images => {
+const makeImagesMarkup = async images => {
   listContainerRef.insertAdjacentHTML('beforeend', imagesListTpl(images));
 };
 
@@ -20,24 +20,21 @@ const clearImagesMarkup = () => {
   listContainerRef.innerHTML = '';
 };
 
-const onFormSearch = e => {
+const onFormSearch = async e => {
   e.preventDefault();
   imagesApiService.query = e.currentTarget.query.value;
   imagesApiService.resetPage();
   clearImagesMarkup();
-  imagesApiService.fetchImages().then(images => {
-    makeImagesMarkup(images);
-    imagesApiService.incrementPage();
-  });
+  const images = await imagesApiService.fetchImages();
+  makeImagesMarkup(images);
 };
 
 const onEntry = entries => {
-  entries.forEach(entry => {
+  entries.forEach(async entry => {
     if (entry.isIntersecting && imagesApiService.query !== '') {
-      imagesApiService.fetchImages().then(images => {
-        makeImagesMarkup(images);
-        imagesApiService.incrementPage();
-      });
+      const images = await imagesApiService.fetchImages();
+      makeImagesMarkup(images);
+      imagesApiService.incrementPage();
     }
   });
 };
